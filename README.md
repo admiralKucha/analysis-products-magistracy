@@ -1,0 +1,1 @@
+# analysis-products-magistracy
