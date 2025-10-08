@@ -1,0 +1,39 @@
+services:
+  backend:
+    build: ./backend
+    container_name: backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+        required: true
+    restart: on-failure
+
+    environment:
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_DATABASE: ${DB_DATABASE}
+
+    command: ${COMMAND_START:-uvicorn app:app --host 0.0.0.0 --port 5000 --workers 1}
+
+  postgres:
+    image: postgres:17
+    container_name: ${DB_HOST:-postgres}
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-postgres}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    volumes:
+      - ./db/${DB_INIT_SQL:-init.sql}:/docker-entrypoint-initdb.d/init.sql
+      - pgdata:/var/lib/postgresql/data
+
+    healthcheck:
+      test: "pg_isready -d ${DB_DATABASE:-postgres} -U ${DB_USERNAME:-postgres}"
+      interval: 3s
+      start_period: 12s
+
+volumes:
+  pgdata:
+    driver: local
