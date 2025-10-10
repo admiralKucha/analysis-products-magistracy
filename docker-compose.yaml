@@ -6,8 +6,6 @@ services:
       postgres:
         condition: service_healthy
         required: true
-    restart: on-failure
-
     environment:
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
@@ -28,6 +26,8 @@ services:
     volumes:
       - ./db/${DB_INIT_SQL:-init.sql}:/docker-entrypoint-initdb.d/init.sql
       - pgdata:/var/lib/postgresql/data
+    ports:
+      - 5433:${DB_PORT:-5432}
 
     healthcheck:
       test: "pg_isready -d ${DB_DATABASE:-postgres} -U ${DB_USERNAME:-postgres}"

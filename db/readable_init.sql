@@ -33,11 +33,13 @@ CREATE TABLE orders(
 
 DROP TABLE IF EXISTS orders_products CASCADE;
 CREATE TABLE orders_products(
-	order_id Serial Primary key, -- из order_products_*.csv
+	order_id integer, -- из order_products_*.csv
     product_id integer NOT NULL, --id из таблицы продуктов
     add_to_cart_order integer NOT NULL, --позиция выбора в корзину
 	reordered boolean NOT NULL, -- выбирался ли он раньше пользователем
+    eval_set text NOT NULL, -- из какой выборки
     FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
-    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    PRIMARY KEY (order_id, product_id) -- добавление составного первичного ключа
 	);
 
