@@ -3,8 +3,13 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.templating import Jinja2Templates
+from starlette.staticfiles import StaticFiles
 
 from db import guest_db, main_db
+
+# фронтенд
+templates = Jinja2Templates(directory="templates")
 
 # база данных
 database = main_db.PostgresDB()
@@ -24,6 +29,7 @@ async def startup(app: FastAPI) -> AsyncGenerator[None, None]:
     # Инициализация пула соединений с базой данных
     await database.create_pool()
     await database_guest.create_pool()
+    app.mount("/static", StaticFiles(directory="static"), name="static")
     yield
 
     # Отключаемся от всех соединений

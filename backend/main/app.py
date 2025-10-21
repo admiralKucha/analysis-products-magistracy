@@ -22,7 +22,7 @@ async def http_exception_handler(request: Request, exc: RequestValidationError) 
             {
                 "loc": error.get("loc", ["", "Неизвестная ошибка"])[1:],
                 "type": error.get("type", "Неизвестная ошибка"),
-            }
+            },
         )
 
     return Response(

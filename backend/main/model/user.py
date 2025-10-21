@@ -9,11 +9,6 @@ class UserAuth(BaseModel):
     password: str
     remember_me: bool = False
 
-    @field_validator("username")
-    @staticmethod
-    def validate_email(v: str) -> str:  # тут был cls и не было static
-        return v.lower()
-
 
 # Информация о юзере
 class UserLoaded(BaseModel):

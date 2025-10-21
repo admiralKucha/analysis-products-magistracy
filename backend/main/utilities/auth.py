@@ -18,8 +18,6 @@ def login_required(func: Callable[..., Awaitable[Response]]) -> Callable[..., Aw
             res = {"status": "error", "message": "Необходимо пройти авторизацию"}
             res = Response(content=json.dumps(res, ensure_ascii=False), status_code=401, media_type="application/json")
             res.delete_cookie("session")
-
-            res.delete_cookie("role")
             return res
 
         try:
@@ -29,14 +27,12 @@ def login_required(func: Callable[..., Awaitable[Response]]) -> Callable[..., Aw
             res = {"status": "error", "message": "Необходимо заново пройти авторизацию"}
             res = Response(content=json.dumps(res, ensure_ascii=False), status_code=401, media_type="application/json")
             res.delete_cookie("session")
-            res.delete_cookie("role")
             return res
 
         if await database.checker(user_id) is None:
             res = {"status": "error", "message": "Необходимо заново пройти авторизацию"}
             res = Response(content=json.dumps(res, ensure_ascii=False), status_code=401, media_type="application/json")
             res.delete_cookie("session")
-            res.delete_cookie("role")
             return res
 
         return await func(*args, **kwargs)
@@ -52,8 +48,6 @@ def logout_check(func: Callable[..., Awaitable[Response]]) -> Callable[..., Awai
             res = {"status": "error", "message": "Пользователь не был в аккаунте"}
             res = Response(content=json.dumps(res, ensure_ascii=False), status_code=401, media_type="application/json")
             res.delete_cookie("session")
-
-            res.delete_cookie("role")
             return res
 
         try:
@@ -63,14 +57,12 @@ def logout_check(func: Callable[..., Awaitable[Response]]) -> Callable[..., Awai
             res = {"status": "error", "message": "Пользователь не был в аккаунте"}
             res = Response(content=json.dumps(res, ensure_ascii=False), status_code=401, media_type="application/json")
             res.delete_cookie("session")
-            res.delete_cookie("role")
             return res
 
         if await database.checker(user_id) is None:
             res = {"status": "error", "message": "Пользователь не был в аккаунте"}
             res = Response(content=json.dumps(res, ensure_ascii=False), status_code=401, media_type="application/json")
             res.delete_cookie("session")
-            res.delete_cookie("role")
             return res
 
         return await func(*args, **kwargs)
