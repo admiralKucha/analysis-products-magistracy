@@ -4,10 +4,11 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from db import main_db
+from db import guest_db, main_db
 
 # база данных
 database = main_db.PostgresDB()
+database_guest = guest_db.PostgresDBGuest()
 
 logging.basicConfig(
     level=logging.INFO,  # Уровень логирования
@@ -22,8 +23,9 @@ logging.basicConfig(
 async def startup(app: FastAPI) -> AsyncGenerator[None, None]:
     # Инициализация пула соединений с базой данных
     await database.create_pool()
-
+    await database_guest.create_pool()
     yield
 
     # Отключаемся от всех соединений
+    await database_guest.delete_pool()
     await database.delete_pool()
