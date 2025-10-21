@@ -1,11 +1,11 @@
 from typing import Annotated
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 
 
 # Информация, необходимая для авторизации
 class UserAuth(BaseModel):
-    username: Annotated[str, Field(min_length=4, max_length=40, examples=["test@test.ru"])]
+    username: Annotated[str, Field(min_length=1, max_length=40, examples=["test@test.ru"])]
     password: str
     remember_me: bool = False
 

@@ -35,6 +35,7 @@ def login_required(func: Callable[..., Awaitable[Response]]) -> Callable[..., Aw
             res.delete_cookie("session")
             return res
 
+        kwargs["session"] = user_id
         return await func(*args, **kwargs)
 
     return wrapper

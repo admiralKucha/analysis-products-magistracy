@@ -14,6 +14,7 @@ router = APIRouter(prefix="")
 @anonymous
 async def authentication(username: Annotated[str, Form()],
                          password: Annotated[str, Form()],
+                         session: str = Cookie(default=None, include_in_schema=False),
                         ) -> Response:
     # проверяем модель
     user = UserAuth(

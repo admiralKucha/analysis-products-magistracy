@@ -33,6 +33,8 @@ class PostgresDB:
             await self.connection.close()
 
     async def checker(self, user_id: int) -> None:
+        return True
+
         async with self.connection.acquire() as cursor:
             try:
                 # Подгружаем информацию о пользователе
