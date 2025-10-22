@@ -35,6 +35,7 @@ async def authentication(username: Annotated[str, Form()],
 
         # добавляем cookie
         response.set_cookie("session", cipher_suite.encrypt(str(user_id).encode()).decode(), max_age=max_age)
+        response.set_cookie("order", {}, max_age=max_age)
         return response
 
     # пользователь не прошел авторизацию, удаляем старые cookie, если есть

@@ -29,13 +29,13 @@ class PostgresDBCustomer(main_db.PostgresDB):
                 # узнаем информацию для пагинации
                 offset, pagination = await self.create_pagination(current_page,
                                                                 limit, "orders", cursor,
-                                                                ("WHERE orders.eval_set = 'train' AND user_id = $1 "),
+                                                                ("WHERE user_id = $1 "),
                                                                  [customer_id])
 
                 # Получили заказы
                 str_exec = ("SELECT id, order_dow, order_hour_of_day "
                             "FROM orders "
-                            "WHERE orders.eval_set = 'train' AND user_id = $1 "
+                            "WHERE user_id = $1 "
                             "ORDER BY order_number DESC "
                             "LIMIT $2 OFFSET $3;")
 
@@ -67,3 +67,74 @@ class PostgresDBCustomer(main_db.PostgresDB):
                 return {"status": "error",
                     "message": error_message,
                     "code": 500}
+
+    async def get_info_order(self, order: dict) -> dict:
+        # выводим все старые заказов
+        error_message = "Ошибка при работе с выводом информации о заказе"
+
+        async with self.connection.acquire() as cursor:
+            try:
+                orders_keys = [int(el) for el in order]
+
+                # Получили позиции в заказах
+                str_exec = ("SELECT id, product_name, category_id, department_id "
+                            "FROM products "
+                            "WHERE id = ANY($1) "
+                            "ORDER BY id ASC ")
+
+                orders_products = await cursor.fetch(str_exec, orders_keys)
+                res = [{"id": el[0],
+                         "product_name": el[1],
+                         "category_id": el[2],
+                         "department_id": el[3],
+                         "count": order[str(el[0])]} for el in orders_products]
+
+                # все хорошо
+                return {"status": "success",
+                    "data": res,
+                    "message": "Получена информация по заказу",
+                    "code": 200,}
+
+            except Exception as error:
+                logging.error(f"get_info_order: {error}")
+                return {"status": "error",
+                    "message": error_message,
+                    "code": 500}
+
+    async def create_order(self, customer_id: int, dict_order: dict):
+        # создаем заказ
+        error_message = "Ошибка при работе с функцией добавления заказа"
+
+        async with self.connection.acquire() as cursor:
+            try:
+                transaction = cursor.transaction()
+                # Начало транзакции
+                await transaction.start()
+
+                # Добавляем вакансию
+                str_exec = ("INSERT INTO orders (user_id, eval_set, order_number, order_dow, order_hour_of_day)"
+                            " VALUES ($1, 'prod', 100, 1, 2) RETURNING id;")
+                order_id = await cursor.fetchrow(str_exec, customer_id)
+
+                order_id = order_id[0]
+                for i, order in enumerate(dict_order):
+                    str_exec = ("INSERT INTO orders_products (order_id, product_id, add_to_cart_order, reordered, eval_set)"
+                                " VALUES ($1, $2, $3, $4,  'prod');")
+                    await cursor.execute(str_exec, order_id, int(order), i, False)
+
+                # Сохраняем результат
+                await transaction.commit()
+                return {
+                    "status": "success",
+                    "message": "Заказ добавлен",
+                    "code": 201
+                }
+
+            except Exception as error:
+                logging.error(f"create_order: {error}")
+                await transaction.rollback()
+                return {
+                    "status": "error",
+                    "message": error_message,
+                    "code": 500,
+                }
