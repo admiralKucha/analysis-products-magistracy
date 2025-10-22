@@ -21,7 +21,7 @@ class PostgresDBProduct(main_db.PostgresDB):
                                                     )
 
     async def get_products(self, category_id: int, department_id: int, limit: int, current_page: int) -> dict:
-        # выводим все старые заказов
+        # выводим все продукты по фильтры
         error_message = "Ошибка при работе с выводом списка продуктов"
 
         async with self.connection.acquire() as cursor:
@@ -76,3 +76,62 @@ class PostgresDBProduct(main_db.PostgresDB):
                 return {"status": "error",
                     "message": error_message,
                     "code": 500}
+
+    async def get_categories(self) -> dict:
+        # выводим все категории
+        error_message = "Ошибка при работе с выводом списка категорий"
+
+        async with self.connection.acquire() as cursor:
+            try:
+
+                # отправляем запрос
+                str_exec = ("SELECT id, category_name "
+                            "FROM categories "
+                            "ORDER BY id DESC ;")
+
+                # Получаем все данные
+                categories = await cursor.fetch(str_exec)
+                info = [{"id": category[0],
+                         "category_name": category[1]} for category in categories]
+
+                # все хорошо
+                return {"status": "success",
+                    "data": info,
+                    "message": "Получен список всех категорий",
+                    "code": 200}
+
+            except Exception as error:
+                logging.error(f"get_categories: {error}")
+                return {"status": "error",
+                    "message": error_message,
+                    "code": 500}
+
+    async def get_departments(self) -> dict:
+        # выводим все департаменты
+        error_message = "Ошибка при работе с выводом списка департаментов"
+
+        async with self.connection.acquire() as cursor:
+            try:
+
+                # отправляем запрос
+                str_exec = ("SELECT id, department_name "
+                            "FROM departments "
+                            "ORDER BY id DESC ;")
+
+                # Получаем все данные
+                departments = await cursor.fetch(str_exec)
+                info = [{"id": department[0],
+                         "department_name": department[1]} for department in departments]
+
+                # все хорошо
+                return {"status": "success",
+                    "data": info,
+                    "message": "Получен список всех департаментов",
+                    "code": 200}
+
+            except Exception as error:
+                logging.error(f"get_departments: {error}")
+                return {"status": "error",
+                    "message": error_message,
+                    "code": 500}
+
