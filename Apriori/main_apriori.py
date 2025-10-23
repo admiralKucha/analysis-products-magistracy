@@ -79,6 +79,16 @@ class AprioriCalculator:
             if predict_set != set():
                 print(f'Корзина: {basket};\t\tПредложение: {predict_set};')
 
+        for category1 in list(categories['aisle']):
+            # Собираем корзину из одной двух категорий
+            for category2 in list(categories['aisle']):
+                basket = {category1, category2}
+                predict_set = self.predict(basket)
+
+                # Если система смогла что-то порекомендовать, то пишем
+                if predict_set != set():
+                    print(f'Корзина: {basket};\t\tПредложение: {predict_set};')
+
 
 if __name__ == '__main__':
     calculator = AprioriCalculator(DATASET_PATH)
