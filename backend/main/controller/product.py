@@ -64,7 +64,7 @@ async def add_to_order(product_id: int,
     order[str(product_id)] = count + 1
 
     # Подготовка ответа
-    res = {"status": "success", "message": "Добавлен товар в корзину"}
+    res = {"status": "success", "message": "Товар добавлен в корзину"}
     response = Response(content=json.dumps(res, ensure_ascii=False), status_code=200,
                         media_type="application/json")
 

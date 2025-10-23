@@ -1,76 +1,156 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <title>Магазин</title>
     <style>
-        .container {
-            display: grid;
-            justify-content: center;
-        }
-        .row-container {
-              grid-row: 1/2;
-              display: grid;
-              grid-template-columns: repeat(5, minmax(190px, 1fr));
-              max-width: 1465px;
-        }
-        .column-container1 {
-              grid-column: 1/2
+      .container {
+        display: grid;
+        justify-content: center;
+      }
+      .row-container {
+        grid-row: 1/2;
+        display: grid;
+        grid-template-columns: repeat(5, minmax(190px, 1fr));
+        max-width: 1465px;
+      }
+      .column-container1 {
+        grid-column: 1/2;
+      }
+      .column-container2 {
+        grid-column: 2/3;
+      }
+      .column-container3 {
+        grid-column: 3/4;
+      }
+      .column-container4 {
+        grid-column: 4/5;
+      }
+      .column-container5 {
+        grid-column: 5/6;
+      }
+      .row-container2 {
+        grid-row: 2/4;
+        display: grid;
+        grid-template-columns: repeat(5, minmax(190px, 1fr));
+        max-width: 1465px;
+      }
+      .row-container3 {
+        grid-row: 4/5;
+        display: grid;
+        grid-template-columns: repeat(5, minmax(190px, 1fr));
+        max-width: 1465px;
+      }
 
-        }
-        .column-container2 {
-              grid-column: 2/3
-
-        }
-        .column-container3 {
-              grid-column: 3/4
-
-        }
-        .column-container4 {
-              grid-column: 4/5
-
-        }
-        .column-container5 {
-              grid-column: 5/6
-
-        }
-        .row-container2 {
-              grid-row: 2/4;
-              display: grid;
-              grid-template-columns: repeat(5, minmax(190px, 1fr));
-              max-width: 1465px;
-
-        }
-        .row-container3 {
-              grid-row: 4/5;
-              display: grid;
-              grid-template-columns: repeat(5, minmax(190px, 1fr));
-              max-width: 1465px;
-
-        }
-
-        .product-card {
-            margin: 15px;
-        }
-        body{
-            background-color: #fab08f;
-            background-color: #ffff5a;
-            background-color: #7fa0f0;
-        }
-
+      .product-card {
+        margin: 15px;
+      }
+      body {
+        background-color: #fab08f;
+        background-color: #ffff5a;
+        background-color: #7fa0f0;
+      }
     </style>
-    <link rel="stylesheet" href="/static/goods.css">
-    <link rel="stylesheet" href="static/search.css">
-    <link rel="stylesheet" href="static/image.css">
-</head>
-<body>
-      <div class="head_row">
-            <button class="main_menu">Главная</button>
-            <button class="account">Аккаунт</button>
-      </div>
+    <link rel="stylesheet" href="/static/goods.css" />
+    <link rel="stylesheet" href="static/search.css" />
+    <link rel="stylesheet" href="static/image.css" />
+  </head>
+  <body>
+    <div class="head_row">
+      <button class="main_menu">Главная</button>
+      <button class="account">Аккаунт</button>
+    </div>
     {% block content %}{% endblock %}
-    
-</body>
+
+    <div
+      id="cart-notification"
+      class="notification"
+      style="
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 16px;
+        border-radius: 8px;
+        color: white;
+        z-index: 1000;
+        max-width: 300px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        opacity: 0;
+        transform: translateX(100px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: none;
+      "
+    ></div>
+
+    <script>
+      // Функция для показа уведомления
+      function showNotification(message, status) {
+        const notification = document.getElementById("cart-notification");
+
+        // Устанавливаем стили в зависимости от статуса
+        if (status === "success") {
+          notification.style.backgroundColor = "#10b981"; // зеленый
+        } else {
+          notification.style.backgroundColor = "#ef4444"; // красный
+        }
+
+        // Устанавливаем текст и показываем
+        notification.textContent = message;
+        notification.style.display = "block";
+
+        // Запускаем анимацию появления
+        requestAnimationFrame(() => {
+          notification.style.opacity = "1";
+          notification.style.transform = "translateX(0)";
+        });
+
+        // Автоматическое скрытие через 2 секунды
+        setTimeout(() => {
+          notification.style.opacity = "0"; // Начинаем анимацию исчезновения
+          notification.style.transform = "translateX(100px)";
+
+          // Полностью скрываем после завершения анимации (1 секунда)
+          setTimeout(() => {
+            notification.style.display = "none";
+          }, 400); // Соответствует длительности анимации
+        }, 1200); // Задержка перед началом анимации (2 секунды)
+      }
+
+      // Обработчик событий HTMX
+      document.addEventListener("htmx:afterRequest", function (event) {
+        // Проверяем, что это запрос на добавление в корзину
+        if (
+          event.detail.requestConfig.path.startsWith("/api/products/") &&
+          event.detail.requestConfig.verb === "post"
+        ) {
+          const xhr = event.detail.xhr;
+          let message = "Товар добавлен в корзину";
+          let status = "success";
+
+          // Проверяем статус ответа
+          if (xhr.status >= 400) {
+            message = "Ошибка при добавлении в корзину";
+            status = "error";
+          } else {
+            // Парсим JSON ответ если есть
+            try {
+              const response = JSON.parse(xhr.responseText);
+              if (response.message) {
+                message = response.message;
+              }
+              if (response.status && response.status !== "success") {
+                status = "error";
+              }
+            } catch (e) {
+              // Если не JSON, используем стандартное сообщение
+            }
+          }
+
+          showNotification(message, status);
+        }
+      });
+    </script>
+  </body>
 </html>
