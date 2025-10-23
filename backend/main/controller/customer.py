@@ -2,6 +2,7 @@ import json
 from typing import Annotated
 
 from fastapi import APIRouter, Cookie, Query, Response
+from fastapi.responses import RedirectResponse
 from init import database_customer
 from utilities.auth import login_required
 
@@ -53,7 +54,8 @@ async def show_order(session: str = Cookie(default=None, include_in_schema=False
 @router.post("/order", tags=["Покупатель"])
 @login_required
 async def create_order(session: str = Cookie(default=None, include_in_schema=False),  # noqa: FAST002
-                       order: str = Cookie(default=None, include_in_schema=False)) -> Response:  # noqa: FAST002
+                       order: str = Cookie(default=None, include_in_schema=False),
+                       to_html: str = "no") -> Response:  # noqa: FAST002
     customer_id = session
 
     if order is None:
@@ -84,6 +86,10 @@ async def create_order(session: str = Cookie(default=None, include_in_schema=Fal
         res = Response(content=json.dumps(res, ensure_ascii=False), status_code=500, media_type="application/json")
 
     res = {"status": "success", "message": "Заказ создан"}
-    res = Response(content=json.dumps(res, ensure_ascii=False), status_code=200, media_type="application/json")
-    res.set_cookie("order", json.dumps(order), max_age=60 * 60 * 24 * 7)
+    if to_html == "no":
+        res = Response(content=json.dumps(res, ensure_ascii=False), status_code=200, media_type="application/json")
+    else:
+        res = RedirectResponse(url="/account", status_code=303)
+
+    res.set_cookie("order", json.dumps({}), max_age=60 * 60 * 24 * 7)
     return res

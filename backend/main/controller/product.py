@@ -3,6 +3,7 @@ import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Cookie, Query, Response
+from fastapi.responses import RedirectResponse
 from init import database_products
 
 router = APIRouter(prefix="/api/products")
@@ -75,7 +76,8 @@ async def add_to_order(product_id: int,
 @router.delete("/{product_id}", tags=["Продукты"])
 async def delete_to_order(product_id: int,
                           session: str = Cookie(default=None, include_in_schema=False),
-                          order: str = Cookie(default=None, include_in_schema=False)) -> Response:
+                          order: str = Cookie(default=None, include_in_schema=False),
+                          to_html: str = "no") -> Response:
 
     if order is None:
         order = {}
@@ -90,8 +92,12 @@ async def delete_to_order(product_id: int,
 
     # Подготовка ответа
     res = {"status": "success", "message": "Товар удален из корзины"}
-    response = Response(content=json.dumps(res, ensure_ascii=False), status_code=200,
+
+    if to_html == "no":
+        response = Response(content=json.dumps(res, ensure_ascii=False), status_code=200,
                         media_type="application/json")
+    else:
+        response = RedirectResponse(url="/account", status_code=303)
 
     response.set_cookie("order", json.dumps(order), max_age=60 * 60 * 24 * 7)
     return response

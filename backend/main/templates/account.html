@@ -1,39 +1,38 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Старые заказы</h2>
-{% for order in orders %}
-<div class="products-row-container" id="orders">
-    
-    <button class="toggle-products-btn" onclick="toggleProductsRow(this, {{ loop.index0 }})">
-        Заказ #{{ order.id }}
-    </button>
-    
-    <div class="products-row hidden">
-        {% for product in order.products %}
+<h2>Текущий заказ</h2>
+<div class="products-row-container" id="current_order">
+    <div class="products-row">
+        {% for product in current_order %}
         <article class="product-card column-container1">
             <img class="product-card__picture" src="{{ product.image }}" width="100%" height="200" alt="product" />
             <span class="product-card__name">{{ product.product_name }}</span>
             <span class="product-card__price">{{ product.price }} р</span>
+            <button class="button" style="background-color: red;" hx-delete="/api/products/{{product.id}}?to_html=yes" hx-trigger="click" hx-swap="outerHTML" hx-select="#current_order" hx-target="#current_order">Убрать из корзины</button>
         </article>
         {% endfor %}
     </div>
     
-    <div class="scroll-controls hidden">
-        <button class="scroll-btn scroll-btn--left" onclick="scrollProductsRow(-1, {{ loop.index0 }})">‹</button>
-        <button class="scroll-btn scroll-btn--right" onclick="scrollProductsRow(1, {{ loop.index0 }})">›</button>
+    <div class="scroll-controls">
+        <button class="scroll-btn scroll-btn--left" onclick="scrollProductsRow(-1, {{ 0 }})">‹</button>
+        <button class="scroll-btn scroll-btn--right" onclick="scrollProductsRow(1, {{ 0 }})">›</button>
     </div>
+
+    <button class="toggle-products-btn" style="background-color: #80ef4f;" hx-post="/api/customer/order?to_html=yes" hx-trigger="click" hx-target="body" hx-swap="innerHTML"> 
+        Купить
+    </button>
 </div>
-{% endfor %}
+
+<h2>Старые заказы</h2>
 <div class="products-row-container"
-    id="orders"
-     hx-get="/account?current_page={{ page }}"
+     id="orders"
+     hx-get="/old-orders?current_page={{ page }}"
      hx-trigger="revealed"
      hx-swap="outerHTML"
      hx-select="#orders"
      >
 </div>
-
 
 <style>
 .products-row-container {
@@ -151,4 +150,5 @@ document.querySelectorAll('.products-row').forEach(row => {
     });
 });
 </script>
+
 {% endblock %}

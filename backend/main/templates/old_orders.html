@@ -1,0 +1,31 @@
+{% for order in orders %}
+<div class="products-row-container" id="orders">
+    
+    <button class="toggle-products-btn" onclick="toggleProductsRow(this, {{ loop.index0 }})">
+        Заказ #{{ order.id }}
+    </button>
+    
+    <div class="products-row hidden">
+        {% for product in order.products %}
+        <article class="product-card column-container1">
+            <img class="product-card__picture" src="{{ product.image }}" width="100%" height="200" alt="product" />
+            <span class="product-card__name">{{ product.product_name }}</span>
+            <span class="product-card__price">{{ product.price }} р</span>
+        </article>
+        {% endfor %}
+    </div>
+    
+    <div class="scroll-controls hidden">
+        <button class="scroll-btn scroll-btn--left" onclick="scrollProductsRow(-1, {{ loop.index0 +1 }})">‹</button>
+        <button class="scroll-btn scroll-btn--right" onclick="scrollProductsRow(1, {{ loop.index0+1 }})">›</button>
+    </div>
+</div>
+{% endfor %}
+<div class="products-row-container"
+    id="orders"
+     hx-get="/old-orders?current_page={{ page }}"
+     hx-trigger="revealed"
+     hx-swap="outerHTML"
+     hx-select="#orders"
+     >
+</div>

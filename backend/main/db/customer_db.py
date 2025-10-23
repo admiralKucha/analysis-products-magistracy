@@ -37,7 +37,7 @@ class PostgresDBCustomer(main_db.PostgresDB):
                 str_exec = ("SELECT id, order_dow, order_hour_of_day "
                             "FROM orders "
                             "WHERE user_id = $1 "
-                            "ORDER BY order_number DESC "
+                            "ORDER BY id DESC "
                             "LIMIT $2 OFFSET $3;")
 
                 orders = await cursor.fetch(str_exec, customer_id, limit, offset)
@@ -83,17 +83,20 @@ class PostgresDBCustomer(main_db.PostgresDB):
                 orders_keys = [int(el) for el in order]
 
                 # Получили позиции в заказах
-                str_exec = ("SELECT id, product_name, category_id, department_id "
+                str_exec = ("SELECT products.id, product_name, category_id, department_name "
                             "FROM products "
-                            "WHERE id = ANY($1) "
-                            "ORDER BY id ASC ")
+                            "INNER JOIN departments ON department_id = departments.id "
+                            "WHERE products.id = ANY($1) "
+                            "ORDER BY products.id ASC ")
 
                 orders_products = await cursor.fetch(str_exec, orders_keys)
                 res = [{"id": el[0],
                          "product_name": el[1],
                          "category_id": el[2],
-                         "department_id": el[3],
-                         "count": order[str(el[0])]} for el in orders_products]
+                         "department_name": el[3],
+                         "price": random.randint(10, 200) * 10,  # noqa: S311
+                         "image": f"/images/{el[3]}.png"}
+                         for el in orders_products]
 
                 # все хорошо
                 return {"status": "success",

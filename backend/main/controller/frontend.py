@@ -1,3 +1,4 @@
+import json
 from typing import Annotated
 
 from fastapi import APIRouter, Cookie, Query, Request
@@ -41,6 +42,31 @@ async def main_page(request: Request,
 @login_required
 async def show_account(request: Request,
                        session: str = Cookie(default=None, include_in_schema=False),
+                       order: str = Cookie(default=None, include_in_schema=False),
+                       current_page: Annotated[int, Query(gt=0)] = 1) -> HTMLResponse:
+
+    if order is None:
+        order = {}
+
+    else:
+        try:
+            order = json.loads(order)
+        except Exception as e:
+            order = {}
+
+    res = await database_customer.get_info_order(order)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="account.html",
+        context={"current_order": res["data"], "page": 1},
+    )
+
+
+@router.get("/old-orders")
+@login_required
+async def show_old_orders(request: Request,
+                       session: str = Cookie(default=None, include_in_schema=False),
                        current_page: Annotated[int, Query(gt=0)] = 1) -> HTMLResponse:
 
     customer_id = session
@@ -50,6 +76,6 @@ async def show_account(request: Request,
 
     return templates.TemplateResponse(
         request=request,
-        name="account.html",
+        name="old_orders.html",
         context={"orders": res, "page": page},
     )
