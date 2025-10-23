@@ -20,7 +20,8 @@ class PostgresDBProduct(main_db.PostgresDB):
                                                     max_size=5,
                                                     )
 
-    async def get_products(self, category_id: int, department_id: int, limit: int, current_page: int) -> dict:
+    async def get_products(self, category_id: int, department_id: int, limit: int,
+                           current_page: int, lst_products: list[int] | None = None) -> dict:
         # выводим все продукты по фильтры
         error_message = "Ошибка при работе с выводом списка продуктов"
 
@@ -37,6 +38,11 @@ class PostgresDBProduct(main_db.PostgresDB):
                 if department_id is not None:
                     filter_lst.append(f"department_id = ${arg_count}")
                     filter_args.append(department_id)
+                    arg_count += 1
+
+                if lst_products is not None:
+                    filter_lst.append(f"products.id = ANY(${arg_count})")
+                    filter_args.append(lst_products)
                     arg_count += 1
 
                 filter_text = "WHERE " + " AND ".join(filter_lst) if filter_lst != [] else ""
