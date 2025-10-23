@@ -36,13 +36,12 @@ class AprioriCalculator:
             if len(r.items) > 1:
                 self.result.append(r)
 
-    def predict(self, basket):
+    def predict(self, basket, min_confidence=0.1):
         """
         Предсказание рекомендации по добавлению в корзину
         :param basket: Текущая корзина - множество категорий в заказе
         :return: множество рекомендованных категорий товаров и его достоверность
         """
-        max_confidence = 0
         predict_set = set()
 
         for r in self.result:
@@ -50,7 +49,7 @@ class AprioriCalculator:
             if (basket & r.items) != set():
                 for statistic in r.ordered_statistics:
                     # Если у нас есть более достоверная рекомендация, то эту пропускаем
-                    if statistic.confidence < max_confidence:
+                    if statistic.confidence < min_confidence:
                         continue
 
                     # Данная статистика должна быть подмножеством нашей корзины
@@ -60,10 +59,9 @@ class AprioriCalculator:
                         if len(add_items) == 0:
                             continue
 
-                        predict_set = add_items
-                        max_confidence = statistic.confidence
+                        predict_set = predict_set.union(add_items)
 
-        return predict_set, max_confidence
+        return predict_set
 
     def test_on_all_aisles(self):
         """
@@ -75,11 +73,11 @@ class AprioriCalculator:
         for category in list(categories['aisle']):
             # Собираем корзину из одной этой категории. В дальнейшем можно пособирать корзины из нескольких категорий
             basket = {category}
-            predict_set, confidence = self.predict(basket)
+            predict_set = self.predict(basket)
 
             # Если система смогла что-то порекомендовать, то пишем
             if predict_set != set():
-                print(f'Корзина: {basket};\t\tПредложение: {predict_set};\t\tДостоверность: {confidence}')
+                print(f'Корзина: {basket};\t\tПредложение: {predict_set};')
 
 
 if __name__ == '__main__':
