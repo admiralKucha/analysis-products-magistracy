@@ -1,9 +1,0 @@
-.news {
-    max-width: 170px;
-    border: 2px dashed;
-    background-color: #C7FCEC;
-    text-align: left;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    word-break: break-word;
-}

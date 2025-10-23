@@ -4,6 +4,7 @@ from functools import wraps
 
 from cryptography.fernet import Fernet, InvalidToken
 from fastapi import Response
+from fastapi.responses import RedirectResponse
 from init import database
 
 key = Fernet.generate_key()
@@ -15,8 +16,7 @@ def login_required(func: Callable[..., Awaitable[Response]]) -> Callable[..., Aw
     async def wrapper(*args, **kwargs: dict) -> Response:  # noqa: ANN002
         session: str | None = kwargs.get("session")
         if session is None:
-            res = {"status": "error", "message": "Необходимо пройти авторизацию"}
-            res = Response(content=json.dumps(res, ensure_ascii=False), status_code=401, media_type="application/json")
+            res = RedirectResponse(url="/authentication", status_code=302)
             res.delete_cookie("session")
             return res
 
@@ -24,14 +24,12 @@ def login_required(func: Callable[..., Awaitable[Response]]) -> Callable[..., Aw
             user_id = int(cipher_suite.decrypt(session))
         except InvalidToken:
             # не наш токен
-            res = {"status": "error", "message": "Необходимо заново пройти авторизацию"}
-            res = Response(content=json.dumps(res, ensure_ascii=False), status_code=401, media_type="application/json")
+            res = RedirectResponse(url="/authentication", status_code=302)
             res.delete_cookie("session")
             return res
 
         if await database.checker(user_id) is None:
-            res = {"status": "error", "message": "Необходимо заново пройти авторизацию"}
-            res = Response(content=json.dumps(res, ensure_ascii=False), status_code=401, media_type="application/json")
+            res = RedirectResponse(url="/authentication", status_code=302)
             res.delete_cookie("session")
             return res
 
@@ -46,8 +44,7 @@ def logout_check(func: Callable[..., Awaitable[Response]]) -> Callable[..., Awai
     async def wrapper(*args, **kwargs: dict) -> Response:  # noqa: ANN002
         session: str | None = kwargs.get("session")
         if session is None:
-            res = {"status": "error", "message": "Пользователь не был в аккаунте"}
-            res = Response(content=json.dumps(res, ensure_ascii=False), status_code=401, media_type="application/json")
+            res = RedirectResponse(url="/", status_code=302)
             res.delete_cookie("session")
             return res
 
@@ -55,14 +52,12 @@ def logout_check(func: Callable[..., Awaitable[Response]]) -> Callable[..., Awai
             user_id = int(cipher_suite.decrypt(session))
         except InvalidToken:
             # не наш токен
-            res = {"status": "error", "message": "Пользователь не был в аккаунте"}
-            res = Response(content=json.dumps(res, ensure_ascii=False), status_code=401, media_type="application/json")
+            res = RedirectResponse(url="/", status_code=302)
             res.delete_cookie("session")
             return res
 
         if await database.checker(user_id) is None:
-            res = {"status": "error", "message": "Пользователь не был в аккаунте"}
-            res = Response(content=json.dumps(res, ensure_ascii=False), status_code=401, media_type="application/json")
+            res = RedirectResponse(url="/", status_code=302)
             res.delete_cookie("session")
             return res
 
@@ -82,8 +77,7 @@ def anonymous(func: Callable[..., Awaitable[Response]]) -> Callable[..., Awaitab
                 # не наш токен
                 return await func(*args, **kwargs)
 
-            res = {"status": "warning", "message": "Пользователь уже авторизован"}
-            return Response(content=json.dumps(res, ensure_ascii=False), status_code=403, media_type="application/json")
+            return RedirectResponse(url="/account", status_code=302)
 
         return await func(*args, **kwargs)
 

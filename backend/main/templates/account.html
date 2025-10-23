@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Старые заказы</h2>
+{% for order in orders %}
+<div class="products-row-container" id="orders">
+    
+    <button class="toggle-products-btn" onclick="toggleProductsRow(this, {{ loop.index0 }})">
+        Заказ #{{ order.id }}
+    </button>
+    
+    <div class="products-row hidden">
+        {% for product in order.products %}
+        <article class="product-card column-container1">
+            <img class="product-card__picture" src="{{ product.image }}" width="100%" height="200" alt="product" />
+            <span class="product-card__name">{{ product.product_name }}</span>
+            <span class="product-card__price">{{ product.price }} р</span>
+        </article>
+        {% endfor %}
+    </div>
+    
+    <div class="scroll-controls hidden">
+        <button class="scroll-btn scroll-btn--left" onclick="scrollProductsRow(-1, {{ loop.index0 }})">‹</button>
+        <button class="scroll-btn scroll-btn--right" onclick="scrollProductsRow(1, {{ loop.index0 }})">›</button>
+    </div>
+</div>
+{% endfor %}
+<div class="products-row-container"
+    id="orders"
+     hx-get="/account?current_page={{ page }}"
+     hx-trigger="revealed"
+     hx-swap="outerHTML"
+     hx-select="#orders"
+     >
+</div>
+
+
+<style>
+.products-row-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    margin-bottom: 20px;
+    padding: 15px;
+}
+
+.products-row {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 10px 0;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+.products-row::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+}
+
+.product-card {
+    flex: 0 0 calc(20% - 16px); /* 5 элементов с учетом gap */
+    min-width: 200px;
+    scroll-snap-align: start;
+}
+
+.scroll-controls {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    justify-content: space-between;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.scroll-btn {
+    pointer-events: all;
+    background-color: #C7FCEC;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: background-color 0.2s;
+    color: black;
+}
+
+.scroll-btn:hover {
+    background-color: #C7FCEC;
+}
+
+.toggle-products-btn {
+    background-color: #C7FCEC;
+    color: black;
+    border: dashed 2px;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 15px;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.toggle-products-btn:hover {
+    background-color: #C7FCEC;
+}
+
+.hidden {
+    display: none !important;
+}
+</style>
+
+<script>
+function toggleProductsRow(button, rowIndex) {
+    const container = button.closest('.products-row-container');
+    const productsRow = container.querySelector('.products-row');
+    const scrollControls = container.querySelector('.scroll-controls');
+    
+    // Переключаем видимость
+    productsRow.classList.toggle('hidden');
+    scrollControls.classList.toggle('hidden');
+    
+}
+
+function scrollProductsRow(direction, rowIndex) {
+    const rows = document.querySelectorAll('.products-row');
+    const row = rows[rowIndex];
+    const scrollAmount = row.clientWidth * 0.8;
+    row.scrollBy({
+        left: scrollAmount * direction,
+        behavior: 'smooth'
+    });
+}
+
+// Обновить обработчик колеса мыши для всех рядов
+document.querySelectorAll('.products-row').forEach(row => {
+    row.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        row.scrollBy({
+            left: e.deltaY * 2,
+            behavior: 'smooth'
+        });
+    });
+});
+</script>
+{% endblock %}

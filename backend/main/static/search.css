@@ -25,6 +25,11 @@
             height: 5ch;
             border-radius: 20px;
             border: dashed 2px;
+            text-decoration: none;
+            color: black;
+            display: flex;
+            align-items: center;    
+            justify-content: center; 
         }
         .account{
             grid-column: 39/40;
@@ -32,6 +37,11 @@
             height: 5ch;
             border-radius: 20px;
             border: dashed 2px;
+            text-decoration: none;
+            color: black;
+            display: flex;
+            align-items: center;    
+            justify-content: center; 
         }
         .yellow-button{
             border: none;

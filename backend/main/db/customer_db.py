@@ -1,4 +1,5 @@
 import logging
+import random
 
 import asyncpg
 from utilities.other import delete_none
@@ -44,14 +45,19 @@ class PostgresDBCustomer(main_db.PostgresDB):
                 orders_keys = list(info.keys())
 
                 # Получили позиции в заказах
-                str_exec = ("SELECT order_id, product_name, category_id, department_id "
+                str_exec = ("SELECT order_id, product_name, category_id, department_name "
                             "FROM orders_products "
                             "INNER JOIN products ON orders_products.product_id = products.id "
+                            "INNER JOIN departments ON department_id = departments.id "
                             "WHERE order_id = ANY($1) "
                             "ORDER BY add_to_cart_order ASC ")
                 orders_products = await cursor.fetch(str_exec, orders_keys)
                 for el in orders_products:
-                    info[el[0]]["products"].append({"name": el[1], "category_id": el[2], "department_id": el[3]})
+                    info[el[0]]["products"].append({"product_name": el[1],
+                                                    "category_id": el[2],
+                                                    "department_name": el[3],
+                                                    "price": random.randint(10, 200) * 10,  # noqa: S311
+                                                    "image": f"/images/{el[3]}.png"})
 
                 res = list(info.values())
 

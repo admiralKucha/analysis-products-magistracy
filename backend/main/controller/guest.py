@@ -3,7 +3,7 @@ import os
 from typing import Annotated
 
 from fastapi import APIRouter, Cookie, Form, Response
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from init import database_guest
 from model.user import UserAuth
 from swagger.responces.guest_responces import ResponseAuthentication, ResponseLogout
@@ -11,6 +11,7 @@ from utilities.auth import anonymous, cipher_suite, logout_check
 
 router = APIRouter(prefix="")
 allowed_characters_image = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_."
+
 
 @router.post("/authentication", tags=["Гость"], responses=ResponseAuthentication)
 @anonymous
@@ -32,12 +33,10 @@ async def authentication(username: Annotated[str, Form()],
     if res["status"] != "error":
         # пользователь прошел авторизацию
         user_id, max_age = res.pop("id"), res.pop("max_age")
-        response = Response(content=json.dumps(res, ensure_ascii=False), status_code=code,
-                            media_type="application/json", headers={"Accept": "application/json"})
+        response = RedirectResponse(url="/account", status_code=302)
 
         # добавляем cookie
         response.set_cookie("session", cipher_suite.encrypt(str(user_id).encode()).decode(), max_age=max_age)
-        response.set_cookie("order", {}, max_age=max_age)
         return response
 
     # пользователь не прошел авторизацию, удаляем старые cookie, если есть
@@ -55,7 +54,7 @@ async def logout(session: str = Cookie(default=None, include_in_schema=False)) -
         "status": "success",
         "message": "Выход из аккаунта совершен",
     }
-    res = Response(content=json.dumps(res, ensure_ascii=False), status_code=200, media_type="application/json")
+    res = RedirectResponse(url="/", status_code=302)
     res.delete_cookie("session")
     return res
 
