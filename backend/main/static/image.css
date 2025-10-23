@@ -1,0 +1,26 @@
+.image-container{
+    grid-column: span 2 / -1;
+    grid-row: 1/3;
+    display: grid;
+    justify-content: center;
+    align-items: center;
+}
+.image-podcontainer{
+    --padding: 0.8rem;
+    display: block;
+    padding: var(--padding);
+    background-color: #C7FCEC;
+    border-radius: 50px;
+    border: 3px solid black;
+}
+
+.image-podcontainer img{
+    border: 3px solid black;
+    background-color: #C7FCEC;
+    border-radius: 50px;
+    width: 500px;
+    max-width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    object-position: center;
+}

@@ -1,14 +1,16 @@
 import json
+import os
 from typing import Annotated
 
-from fastapi import APIRouter, Cookie, Form, Request, Response
-from init import database_guest, templates
+from fastapi import APIRouter, Cookie, Form, Response
+from fastapi.responses import FileResponse
+from init import database_guest
 from model.user import UserAuth
 from swagger.responces.guest_responces import ResponseAuthentication, ResponseLogout
 from utilities.auth import anonymous, cipher_suite, logout_check
 
 router = APIRouter(prefix="")
-
+allowed_characters_image = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_."
 
 @router.post("/authentication", tags=["Гость"], responses=ResponseAuthentication)
 @anonymous
@@ -58,8 +60,17 @@ async def logout(session: str = Cookie(default=None, include_in_schema=False)) -
     return res
 
 
-@router.get("/authentication")
-@anonymous
-async def authentication_form(request: Request,
-                              session: str = Cookie(default=None, include_in_schema=False)) -> Response:  # noqa: FAST002
-    return templates.TemplateResponse(request=request, name="auth.html")
+@router.get("/images/{image}", tags=["Гость"])
+async def download_image(image: str, session: str = Cookie(default=None, include_in_schema=False)) -> FileResponse:
+    # пользователь хочет получить картинку - отправляем ее
+
+    # Оставляем только разрешенные символы в имени файла
+    cleaned_filename = "".join(c if c in allowed_characters_image else "_" for c in image)
+
+    # проверяем, есть ли картинка
+    path = f"../images/img/{cleaned_filename}"
+    if os.path.exists(path):
+        return FileResponse(path=path)
+
+    res = {"status": "error", "message": "Такого файла нет"}
+    return Response(content=json.dumps(res, ensure_ascii=False), status_code=404, media_type="application/json")

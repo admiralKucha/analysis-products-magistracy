@@ -1,7 +1,7 @@
 import logging
+import random
 
 import asyncpg
-from utilities.other import delete_none
 
 from db import main_db
 
@@ -62,7 +62,9 @@ class PostgresDBProduct(main_db.PostgresDB):
                 info = [{"id": product[0],
                          "product_name": product[1],
                          "department_name": product[2],
-                         "category_name": product[2]} for product in products]
+                         "category_name": product[2],
+                         "price": random.randint(10, 200) * 10,  # noqa: S311
+                         "image": f"/images/{product[2]}.png"} for product in products]
 
                 # все хорошо
                 return {"status": "success",
