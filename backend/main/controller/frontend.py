@@ -1,6 +1,8 @@
 import json
+import random
 from typing import Annotated
 
+import init
 from fastapi import APIRouter, Cookie, Query, Request
 from fastapi.responses import HTMLResponse
 from init import database_customer, database_products, templates
@@ -78,4 +80,33 @@ async def show_old_orders(request: Request,
         request=request,
         name="old_orders.html",
         context={"orders": res, "page": page},
+    )
+
+
+@router.get("/recomendation/k_means", tags=["Покупатель"])
+@login_required
+async def show_recomendation_k_means_template(request: Request,
+                                              session: str = Cookie(default=None, include_in_schema=False),  # noqa: FAST002
+                                              order: str = Cookie(default=None, include_in_schema=False),
+                                              page: int = 1) -> HTMLResponse:  # noqa: FAST002
+    user_id = session
+    if order is None:
+        order = {}
+
+    else:
+        try:
+            order = json.loads(order)
+        except Exception as e:
+            order = {}
+
+    cluster_id = init.k_means_rules["users"].get(int(user_id), 0)
+    products = init.k_means_rules["clusters"][cluster_id]
+    products = random.sample(products, min(4, len(products)))
+
+    res = await database_products.get_products(None, None, 4, 1, products)
+
+    return templates.TemplateResponse(
+        request=request,
+        name=f"recomendation_section_{page}.html",
+        context={"products": res["data"]},
     )

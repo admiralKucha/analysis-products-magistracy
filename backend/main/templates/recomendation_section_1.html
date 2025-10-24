@@ -1,0 +1,26 @@
+<div class="image-container" id="recs" style="border-radius: 20px; background-color: palegreen;">
+    <article class="product-card column-container4">
+        <img class="product-card__picture" src="{{products[0].image}}" width="100%" height="200" alt="product" />
+        <span class="product-card__name">{{products[0].product_name}}</span>
+        <span class="product-card__price">{{products[0].price}} р</span>
+        <button class="button" hx-post="/api/products/{{products[0].id}}" hx-trigger="click" hx-swap="none">В корзину</button>
+    </article>
+    <article class="product-card column-container5">
+        <img class="product-card__picture" src="{{products[1].image}}" width="100%" height="200" alt="product" />
+        <span class="product-card__name">{{products[1].product_name}}</span>
+        <span class="product-card__price">{{products[1].price}} р</span>
+        <button class="button" hx-post="/api/products/{{products[1].id}}" hx-trigger="click" hx-swap="none">В корзину</button>
+    </article>
+    <article class="product-card column-container4">
+        <img class="product-card__picture" src="{{products[2].image}}" width="100%" height="200" alt="product" />
+        <span class="product-card__name">{{products[2].product_name}}</span>
+        <span class="product-card__price">{{products[2].price}} р</span>
+        <button class="button" hx-post="/api/products/{{products[2].id}}" hx-trigger="click" hx-swap="none">В корзину</button>
+    </article>
+    <article class="product-card column-container5">
+        <img class="product-card__picture" src="{{products[3].image}}" width="100%" height="200" alt="product" />
+        <span class="product-card__name">{{products[3].product_name}}</span>
+        <span class="product-card__price">{{products[3].price}} р</span>
+        <button class="button" hx-post="/api/products/{{products[3].id}}" hx-trigger="click" hx-swap="none">В корзину</button>
+    </article>
+</div>

@@ -71,10 +71,12 @@
             <span class="product-card__price">{{products[10].price}} р</span>
             <button class="button" hx-post="/api/products/{{products[10].id}}" hx-trigger="click" hx-swap="none">В корзину</button>
         </article>
-        <div class="image-container" >
-            <div class="image-podcontainer">
-                Здесь должен быть блок из 4 объектов из рекомендательных систем
-            </div>
+        <div class="image-container" 
+            id="recs"
+            hx-get="/recomendation/k_means?page=1"
+            hx-trigger="revealed"
+            hx-swap="outerHTML"
+            hx-select="#recs">
         </div>
     </div>
      <div class="row-container3">
@@ -112,7 +114,7 @@
 </div>
 
 <div class="container"
-    id="products"
+     id="products"
      hx-get="/?current_page={{ page }}"
      hx-trigger="revealed"
      hx-swap="outerHTML"

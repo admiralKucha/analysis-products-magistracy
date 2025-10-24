@@ -35,10 +35,12 @@
         </article>
     </div>
     <div class="row-container2">
-        <div class="image-container" style="grid-column: 1 / 3">
-            <div class="image-podcontainer">
-                Здесь должен быть блок из 4 объектов из рекомендательных систем
-            </div>
+        <div class="image-container" 
+            id="recs"
+            hx-get="/recomendation/k_means?page=2"
+            hx-trigger="revealed"
+            hx-swap="outerHTML"
+            hx-select="#recs">
         </div>
         <article class="product-card column-container3">
             <img class="product-card__picture" src="{{products[5].image}}" width="100%" height="200" alt="product" />
