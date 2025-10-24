@@ -1,7 +1,7 @@
 {% for order in orders %}
 <div class="products-row-container" id="orders">
     
-    <button class="toggle-products-btn" onclick="toggleProductsRow(this, {{ loop.index0 }})">
+    <button class="toggle-products-btn" onclick="toggleProductsRow(this, {{ loop.index0 + (current_page-1)*10 }})">
         Заказ #{{ order.id }}
     </button>
     
@@ -16,8 +16,8 @@
     </div>
     
     <div class="scroll-controls hidden">
-        <button class="scroll-btn scroll-btn--left" onclick="scrollProductsRow(-1, {{ loop.index0 +1 }})">‹</button>
-        <button class="scroll-btn scroll-btn--right" onclick="scrollProductsRow(1, {{ loop.index0+1 }})">›</button>
+        <button class="scroll-btn scroll-btn--left" onclick="scrollProductsRow(-1, {{ loop.index0 +2 + (current_page-1)*10}})">‹</button>
+        <button class="scroll-btn scroll-btn--right" onclick="scrollProductsRow(1, {{ loop.index0+2 + (current_page-1)*10}})">›</button>
     </div>
 </div>
 {% endfor %}

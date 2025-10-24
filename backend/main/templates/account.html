@@ -18,11 +18,27 @@
         <button class="scroll-btn scroll-btn--left" onclick="scrollProductsRow(-1, {{ 0 }})">‹</button>
         <button class="scroll-btn scroll-btn--right" onclick="scrollProductsRow(1, {{ 0 }})">›</button>
     </div>
-
-    <button class="toggle-products-btn" style="background-color: #80ef4f;" hx-post="/api/customer/order?to_html=yes" hx-trigger="click" hx-target="body" hx-swap="innerHTML"> 
-        Купить
-    </button>
 </div>
+
+<h3>Добавьте в корзину</h3>
+<div class="products-row-container">
+    <div class="products-row" 
+            id="recs"
+            hx-get="/recomendation/apriori"
+            hx-trigger="revealed"
+            hx-swap="outerHTML"
+            hx-select="#recs">
+    </div>
+
+    <div class="scroll-controls">
+        <button class="scroll-btn scroll-btn--left" onclick="scrollProductsRow(-1, {{ 1 }})">‹</button>
+        <button class="scroll-btn scroll-btn--right" onclick="scrollProductsRow(1, {{ 1 }})">›</button>
+    </div>
+</div>
+
+<button class="toggle-products-btn" style="background-color: #80ef4f;" hx-post="/api/customer/order?to_html=yes" hx-trigger="click" hx-target="body" hx-swap="innerHTML"> 
+    Купить
+</button>
 
 <h2>Старые заказы</h2>
 <div class="products-row-container"

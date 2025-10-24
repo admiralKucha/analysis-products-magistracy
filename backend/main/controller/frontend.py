@@ -74,12 +74,13 @@ async def show_old_orders(request: Request,
     customer_id = session
     res = await database_customer.get_old_orders(customer_id, 10, current_page)
     page = res["pagination"]["next_page"]
+    current_page = res["pagination"]["current_page"]
     res = res["data"]
 
     return templates.TemplateResponse(
         request=request,
         name="old_orders.html",
-        context={"orders": res, "page": page},
+        context={"orders": res, "page": page, "current_page": current_page},
     )
 
 
@@ -103,4 +104,36 @@ async def show_recomendation_k_means_template(request: Request,
         request=request,
         name=f"recomendation_section_{page}.html",
         context={"products": res["data"]},
+    )
+
+
+@router.get("/recomendation/apriori", tags=["Покупатель"])
+@login_required
+async def show_recomendation_apriori(request: Request,
+                                     session: str = Cookie(default=None, include_in_schema=False),  # noqa: FAST002
+                                     order: str = Cookie(default=None, include_in_schema=False)) -> HTMLResponse:  # noqa: FAST002
+    if order is None:
+        order = {}
+
+    else:
+        try:
+            order = json.loads(order)
+        except Exception as e:
+            order = {}
+
+    recom = {}
+    for el in order:
+        mini_rec = init.apriori2_rules.get(int(el), {})
+        for key, confidence in mini_rec.items():
+            old_confidence = recom.get(key, 0)
+            if confidence > old_confidence:
+                recom[key] = confidence
+            else:
+                recom[key] = old_confidence
+
+    res = await database_products.get_products(None, None, 100, 1, list(recom.keys()))
+    return templates.TemplateResponse(
+        request=request,
+        name="recomendation_account.html",
+        context={"current_order": res["data"]},
     )
