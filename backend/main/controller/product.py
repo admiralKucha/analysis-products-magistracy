@@ -51,7 +51,8 @@ async def show_departments(session: str = Cookie(default=None, include_in_schema
 @router.post("/{product_id}", tags=["Продукты"])
 async def add_to_order(product_id: int,
                         session: str = Cookie(default=None, include_in_schema=False),
-                        order: str = Cookie(default=None, include_in_schema=False)) -> Response:
+                        order: str = Cookie(default=None, include_in_schema=False),
+                        to_html: str = "no") -> Response:
 
     if order is None:
         order = {}
@@ -69,6 +70,12 @@ async def add_to_order(product_id: int,
     res = {"status": "success", "message": "Товар добавлен в корзину"}
     response = Response(content=json.dumps(res, ensure_ascii=False), status_code=200,
                         media_type="application/json")
+
+    if to_html == "no":
+        response = Response(content=json.dumps(res, ensure_ascii=False), status_code=200,
+                        media_type="application/json")
+    else:
+        response = RedirectResponse(url="/account", status_code=303)
 
     response.set_cookie("order", json.dumps(order), max_age=60 * 60 * 24 * 7)
     return response

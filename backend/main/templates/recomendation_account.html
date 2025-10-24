@@ -4,7 +4,7 @@
         <img class="product-card__picture" src="{{ product.image }}" width="100%" height="200" alt="product" />
         <span class="product-card__name">{{ product.product_name }}</span>
         <span class="product-card__price">{{ product.price }} р</span>
-        <button class="button" hx-post="/api/products/{{product.id}}" hx-trigger="click" hx-swap="none">В корзину</button>
+        <button class="button" hx-post="/api/products/{{product.id}}?to_html=yes" hx-trigger="click" hx-swap="innerHTML" hx-target="#current_order">В корзину</button>
     </article>
     {% endfor %}
 </div>
