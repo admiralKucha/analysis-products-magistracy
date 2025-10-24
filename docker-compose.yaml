@@ -5,7 +5,8 @@ services:
     volumes:
       - backups:/backups
       - images:/images
-    
+      - ./backend/rec_systems:/backend/rec_systems
+
     ports:
       - 5001:5000
 

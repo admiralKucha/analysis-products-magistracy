@@ -1,4 +1,5 @@
 import logging
+import pickle
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
@@ -16,6 +17,7 @@ database = main_db.PostgresDB()
 database_guest = guest_db.PostgresDBGuest()
 database_customer = customer_db.PostgresDBCustomer()
 database_products = product_db.PostgresDBProduct()
+apriori2_rules = None
 
 logging.basicConfig(
     level=logging.INFO,  # Уровень логирования
@@ -28,11 +30,16 @@ logging.basicConfig(
 
 @asynccontextmanager
 async def startup(app: FastAPI) -> AsyncGenerator[None, None]:
+    global apriori2_rules
+
     # Инициализация пула соединений с базой данных
     await database.create_pool()
     await database_guest.create_pool()
     await database_customer.create_pool()
     await database_products.create_pool()
+    with open("/backend/rec_systems/results/apriori2_dict.pkl", "rb") as f:
+        apriori2_rules = pickle.load(f)
+
     app.mount("/static", StaticFiles(directory="static"), name="static")
     yield
 
@@ -41,3 +48,4 @@ async def startup(app: FastAPI) -> AsyncGenerator[None, None]:
     await database.delete_pool()
     await database_customer.delete_pool()
     await database_products.delete_pool()
+    apriori2_rules = None
