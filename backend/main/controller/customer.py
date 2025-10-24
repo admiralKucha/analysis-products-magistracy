@@ -1,4 +1,5 @@
 import json
+import random
 from typing import Annotated
 
 import init
@@ -99,8 +100,7 @@ async def create_order(session: str = Cookie(default=None, include_in_schema=Fal
 @router.get("/order/recomendation/apriori", tags=["Покупатель"])
 @login_required
 async def show_recomendation_apriori(session: str = Cookie(default=None, include_in_schema=False),  # noqa: FAST002
-                                     order: str = Cookie(default=None, include_in_schema=False),
-                                     min_confidence: float = 0.1) -> Response:  # noqa: FAST002
+                                     order: str = Cookie(default=None, include_in_schema=False)) -> Response:  # noqa: FAST002
     if order is None:
         order = {}
 
@@ -120,9 +120,32 @@ async def show_recomendation_apriori(session: str = Cookie(default=None, include
             else:
                 recom[key] = old_confidence
 
-    print(len(init.apriori2_rules))
-
     res = await database_products.get_products(None, None, 100, 1, list(recom.keys()))
+    res = {"status": "success", "message": "Получена рекомендации к заказу", "data": res}
+    res = Response(content=json.dumps(res, ensure_ascii=False), status_code=200, media_type="application/json")
+    res.set_cookie("order", json.dumps(order), max_age=60 * 60 * 24 * 7)
+    return res
+
+
+@router.get("/order/recomendation/k_means", tags=["Покупатель"])
+@login_required
+async def show_recomendation_k_means(session: str = Cookie(default=None, include_in_schema=False),  # noqa: FAST002
+                                     order: str = Cookie(default=None, include_in_schema=False)) -> Response:  # noqa: FAST002
+    user_id = session
+    if order is None:
+        order = {}
+
+    else:
+        try:
+            order = json.loads(order)
+        except Exception as e:
+            order = {}
+
+    cluster_id = init.k_means_rules["users"].get(int(user_id), 0)
+    products = init.k_means_rules["clusters"][cluster_id]
+    products = random.sample(products, min(20, len(products)))
+
+    res = await database_products.get_products(None, None, 100, 1, products)
     res = {"status": "success", "message": "Получена рекомендации к заказу", "data": res}
     res = Response(content=json.dumps(res, ensure_ascii=False), status_code=200, media_type="application/json")
     res.set_cookie("order", json.dumps(order), max_age=60 * 60 * 24 * 7)

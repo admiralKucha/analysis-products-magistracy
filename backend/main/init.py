@@ -18,6 +18,7 @@ database_guest = guest_db.PostgresDBGuest()
 database_customer = customer_db.PostgresDBCustomer()
 database_products = product_db.PostgresDBProduct()
 apriori2_rules = None
+k_means_rules = None
 
 logging.basicConfig(
     level=logging.INFO,  # Уровень логирования
@@ -30,7 +31,7 @@ logging.basicConfig(
 
 @asynccontextmanager
 async def startup(app: FastAPI) -> AsyncGenerator[None, None]:
-    global apriori2_rules
+    global apriori2_rules, k_means_rules
 
     # Инициализация пула соединений с базой данных
     await database.create_pool()
@@ -39,6 +40,9 @@ async def startup(app: FastAPI) -> AsyncGenerator[None, None]:
     await database_products.create_pool()
     with open("/backend/rec_systems/results/apriori2_dict.pkl", "rb") as f:
         apriori2_rules = pickle.load(f)
+
+    with open("/backend/rec_systems/results/k_means2.pkl", "rb") as f:
+        k_means_rules = pickle.load(f)
 
     app.mount("/static", StaticFiles(directory="static"), name="static")
     yield
@@ -49,3 +53,4 @@ async def startup(app: FastAPI) -> AsyncGenerator[None, None]:
     await database_customer.delete_pool()
     await database_products.delete_pool()
     apriori2_rules = None
+    k_means_rules = None
