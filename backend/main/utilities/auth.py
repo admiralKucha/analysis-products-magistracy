@@ -82,3 +82,26 @@ def anonymous(func: Callable[..., Awaitable[Response]]) -> Callable[..., Awaitab
         return await func(*args, **kwargs)
 
     return wrapper
+
+
+def check_session(func: Callable[..., Awaitable[Response]]) -> Callable[..., Awaitable[Response]]:
+    @wraps(func)
+    async def wrapper(*args, **kwargs: dict) -> Response:  # noqa: ANN002
+        session: str | None = kwargs.get("session")
+        if session is None:
+            return await func(*args, **kwargs)
+        try:
+            user_id = int(cipher_suite.decrypt(session))
+        except InvalidToken:
+            # не наш токен
+            kwargs["session"] = None
+            return await func(*args, **kwargs)
+
+        if await database.checker(user_id) is None:
+            kwargs["session"] = None
+            return await func(*args, **kwargs)
+
+        kwargs["session"] = user_id
+        return await func(*args, **kwargs)
+
+    return wrapper

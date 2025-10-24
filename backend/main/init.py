@@ -19,6 +19,7 @@ database_customer = customer_db.PostgresDBCustomer()
 database_products = product_db.PostgresDBProduct()
 apriori2_rules = None
 k_means_rules = None
+top1000_products = None
 
 logging.basicConfig(
     level=logging.INFO,  # Уровень логирования
@@ -31,7 +32,7 @@ logging.basicConfig(
 
 @asynccontextmanager
 async def startup(app: FastAPI) -> AsyncGenerator[None, None]:
-    global apriori2_rules, k_means_rules
+    global apriori2_rules, k_means_rules, top1000_products
 
     # Инициализация пула соединений с базой данных
     await database.create_pool()
@@ -44,6 +45,10 @@ async def startup(app: FastAPI) -> AsyncGenerator[None, None]:
     with open("/backend/rec_systems/results/k_means2.pkl", "rb") as f:
         k_means_rules = pickle.load(f)
 
+    with open("/backend/rec_systems/results/chastota.pickle", "rb") as f:
+        top1000_products = pickle.load(f)
+        top1000_products = sorted(top1000_products.keys(), key=lambda x: int(top1000_products[x]), reverse=True)[:1000]
+
     app.mount("/static", StaticFiles(directory="static"), name="static")
     yield
 
@@ -54,3 +59,4 @@ async def startup(app: FastAPI) -> AsyncGenerator[None, None]:
     await database_products.delete_pool()
     apriori2_rules = None
     k_means_rules = None
+    top1000_products = None

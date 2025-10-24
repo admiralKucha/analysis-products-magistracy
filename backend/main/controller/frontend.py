@@ -6,7 +6,7 @@ import init
 from fastapi import APIRouter, Cookie, Query, Request
 from fastapi.responses import HTMLResponse
 from init import database_customer, database_products, templates
-from utilities.auth import anonymous, login_required
+from utilities.auth import anonymous, check_session, login_required
 
 router = APIRouter(prefix="")
 
@@ -84,24 +84,18 @@ async def show_old_orders(request: Request,
 
 
 @router.get("/recomendation/k_means", tags=["Покупатель"])
-@login_required
+@check_session
 async def show_recomendation_k_means_template(request: Request,
                                               session: str = Cookie(default=None, include_in_schema=False),  # noqa: FAST002
-                                              order: str = Cookie(default=None, include_in_schema=False),
                                               page: int = 1) -> HTMLResponse:  # noqa: FAST002
     user_id = session
-    if order is None:
-        order = {}
+    if user_id is None:
+        products = random.sample(init.top1000_products, min(4, len(init.top1000_products)))
 
     else:
-        try:
-            order = json.loads(order)
-        except Exception as e:
-            order = {}
-
-    cluster_id = init.k_means_rules["users"].get(int(user_id), 0)
-    products = init.k_means_rules["clusters"][cluster_id]
-    products = random.sample(products, min(4, len(products)))
+        cluster_id = init.k_means_rules["users"].get(int(user_id), 0)
+        products = init.k_means_rules["clusters"][cluster_id]
+        products = random.sample(products, min(4, len(products)))
 
     res = await database_products.get_products(None, None, 4, 1, products)
 
